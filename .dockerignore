@@ -1,0 +1,34 @@
+# Only the built JAR is sent to Docker (keeps context small)
+target/*
+!target/crop-recommendation-system-*.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Docker (keep Dockerfile for build)
+docker-compose*
+.dockerignore
+
+# Docs and local only
+*.md
+!README.md
+docs/
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and temp
+*.log
+tmp/
+temp/

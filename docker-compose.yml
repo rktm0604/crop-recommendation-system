@@ -1,0 +1,52 @@
+# Smart Crop Recommendation System - Full stack (app + MySQL)
+# Run: docker compose up -d
+# App: http://localhost:8080
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: crop-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: crop_recommendation_db
+      MYSQL_USER: cropuser
+      MYSQL_PASSWORD: croppass
+    ports:
+      - "3306:3306"
+    volumes:
+      - crop-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - crop-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: crop-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/crop_recommendation_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: cropuser
+      SPRING_DATASOURCE_PASSWORD: croppass
+      # Optional: set your OpenWeather API key for weather features
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - crop-net
+    restart: unless-stopped
+
+volumes:
+  crop-mysql-data:
+
+networks:
+  crop-net:
+    driver: bridge
