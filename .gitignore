@@ -1,0 +1,32 @@
+# Compiled class files
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+*.swp
+
+# Maven
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# H2 Database files
+data/
+*.db
+*.mv.db
+*.trace.db
+
+# Environment
+.env
+
+# Logs
+*.log
