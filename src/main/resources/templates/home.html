@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCrop - Smart Crop Recommendation</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="landing-page">
+
+    <div class="background-wrapper">
+
+        <div class="hero-card">
+
+            <nav class="navbar">
+                <div class="logo">🌿 SmartCrop</div>
+                <ul class="nav-links">
+                    <li><a href="#" class="active">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a th:href="@{/login}">Login</a></li>
+                </ul>
+                <a th:href="@{/register}" class="btn-outline">Get Started</a>
+            </nav>
+
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Smart Crop <br> Recommendation</h1>
+                    <p>
+                        Analyze soil nutrients and climate data to
+                        get data-driven crop recommendations powered
+                        by intelligent algorithms.
+                    </p>
+                    <a th:href="@{/login}" class="btn-primary">Try Now →</a>
+                </div>
+
+                <div class="hero-image">
+                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80"
+                        alt="Agriculture field">
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

@@ -27,7 +27,7 @@ public class WebController {
 
     @GetMapping("/")
     public String home() {
-        return "redirect:/login";
+        return "home";
     }
 
     @GetMapping("/login")

@@ -47,7 +47,8 @@ $jdk = Find-Jdk17
 if ($jdk) {
     $env:JAVA_HOME = $jdk
     $env:PATH = "$jdk\bin;$env:PATH"
-} else {
+}
+else {
     Write-Host "ERROR: No JDK found (need JDK, not JRE - must have bin\javac.exe)." -ForegroundColor Red
     Write-Host "Searched: Program Files\Eclipse Adoptium, Java, Microsoft." -ForegroundColor Yellow
     Write-Host ""
@@ -65,32 +66,46 @@ if (-not (Test-Path $wrapperJar)) {
     New-Item -ItemType Directory -Force -Path .mvn\wrapper | Out-Null
     try {
         Invoke-WebRequest -Uri "https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar" -OutFile $wrapperJar -UseBasicParsing
-    } catch {
+    }
+    catch {
         Write-Host "Download failed. Install Maven from https://maven.apache.org and run: mvn spring-boot:run" -ForegroundColor Red
         exit 1
     }
 }
 
-Write-Host "Starting Smart Crop Recommendation System (demo mode - no MySQL required)..." -ForegroundColor Cyan
-Write-Host "App will be at http://localhost:8080 (Login: farmer@crop.com / password123)" -ForegroundColor Green
+# --- Mode Selection ---
+# Default: MySQL (production). Use .\run.ps1 -Demo for H2 in-memory database.
+$demoMode = $false
+if ($args -contains "-Demo") { $demoMode = $true }
+
+if ($demoMode) {
+    Write-Host "Starting Smart Crop Recommendation System (DEMO - H2 database)..." -ForegroundColor Yellow
+    Write-Host "App will be at http://localhost:8080 (Login: farmer@crop.com / password123)" -ForegroundColor Green
+}
+else {
+    Write-Host "Starting Smart Crop Recommendation System (MySQL)..." -ForegroundColor Cyan
+    Write-Host "App will be at http://localhost:8080 (Login: farmer@crop.com / password123)" -ForegroundColor Green
+    Write-Host "Requires: MySQL running on localhost:3306 (see application.properties)" -ForegroundColor DarkGray
+}
 Write-Host ""
 
 $projectDir = (Get-Location).Path
-# Use "demo" profile = H2 database (no MySQL needed). Remove "-Dspring-boot.run.profiles=demo" to use MySQL.
 $javaArgs = @(
     "-Dmaven.multiModuleProjectDirectory=$projectDir",
     "-classpath", $wrapperJar,
     "org.apache.maven.wrapper.MavenWrapperMain",
-    "spring-boot:run",
-    "-Dspring-boot.run.profiles=demo"
+    "spring-boot:run"
 )
+if ($demoMode) {
+    $javaArgs += "-Dspring-boot.run.profiles=demo"
+}
 & java $javaArgs
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
     Write-Host "App exited with an error. Scroll UP to see the first red/exception message." -ForegroundColor Yellow
     Write-Host "Common causes:" -ForegroundColor Yellow
-    Write-Host "  1) MySQL not running - start MySQL service (or install MySQL and create database crop_recommendation_db)" -ForegroundColor Gray
-    Write-Host "  2) Wrong password - edit src\main\resources\application.properties and set spring.datasource.password=YOUR_MYSQL_PASSWORD" -ForegroundColor Gray
+    Write-Host "  1) MySQL not running - start MySQL service, or use: .\run.ps1 -Demo" -ForegroundColor Gray
+    Write-Host "  2) Wrong password - edit src\main\resources\application.properties" -ForegroundColor Gray
     Write-Host "  3) Port 8080 in use - close the other app or change server.port in application.properties" -ForegroundColor Gray
     exit $LASTEXITCODE
 }
