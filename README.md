@@ -1,289 +1,429 @@
-# Smart Crop Recommendation System
+<p align="center">
+  <h1 align="center">🌿 SmartCrop — Crop Recommendation System</h1>
+  <p align="center">
+    An intelligent, full-stack crop recommendation platform that analyzes soil nutrients and climate data to deliver data-driven recommendations for optimal crop selection.
+  </p>
+</p>
 
-Industry-level full-stack application for crop recommendation based on soil data (NPK, pH, moisture) and optional real-time weather (OpenWeather API). Built with **Spring Boot**, **MySQL**, **JWT**, and **Thymeleaf + Bootstrap 5 + Chart.js**.
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 17">
+  <img src="https://img.shields.io/badge/Spring_Boot-3.2-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot">
+  <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL">
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License">
+</p>
 
 ---
 
-## Tech Stack
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Quick Start](#-quick-start)
+- [API Reference](#-api-reference)
+- [Default Users](#-default-users)
+- [Screenshots](#-screenshots)
+- [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## 🌱 Overview
+
+SmartCrop is a production-ready crop recommendation system built with **Spring Boot** that helps farmers make data-driven decisions. It analyzes soil parameters (Nitrogen, Phosphorus, Potassium, pH) along with real-time weather data to recommend the most suitable crop with a confidence score.
+
+**Key Highlights:**
+- 🧪 Rule-based recommendation engine matching soil profiles to ideal crop ranges
+- 🌤️ Real-time weather integration via OpenWeather API
+- 📊 Interactive dashboards with Chart.js visualizations
+- 🔐 JWT-based authentication with role-based access control (Admin, Farmer, Officer)
+- 🐳 Docker-ready for one-command deployment
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| **Soil Analysis** | Submit NPK, pH, and moisture data for intelligent crop matching |
+| **Weather Integration** | Live weather data from OpenWeather API for climate-aware recommendations |
+| **Smart Recommendations** | Algorithm matches soil + climate to crop ideal ranges with confidence scoring |
+| **Role-Based Dashboards** | Farmer (NPK trends), Admin (crop analytics), Officer (weather trends) |
+| **JWT Authentication** | Secure login with BCrypt passwords and HTTP-only cookie sessions |
+| **Modern Landing Page** | Beautiful hero section with feature cards and gradient design |
+| **Responsive UI** | Mobile-friendly dashboard built with Bootstrap 5 + custom CSS |
+| **RESTful API** | Complete API for programmatic access to all features |
+| **Docker Support** | One-command deployment with MySQL via Docker Compose |
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph TB
+    subgraph Client["🖥️ Client Layer"]
+        LP[Landing Page]
+        UI[Dashboard UI<br/>Thymeleaf + Bootstrap 5 + Chart.js]
+        API_CLIENT[REST API Clients]
+    end
+
+    subgraph Security["🔐 Security Layer"]
+        JWT[JWT Authentication Filter]
+        RBAC[Role-Based Access Control]
+    end
+
+    subgraph Application["⚙️ Application Layer"]
+        WC[Web Controller]
+        AC[Auth Controller]
+        RC[Recommendation Controller]
+        SC[Soil Data Controller]
+        WEC[Weather Controller]
+        DC[Dashboard API Controller]
+    end
+
+    subgraph Service["🧠 Service Layer"]
+        RS[Recommendation Service<br/>Rule-Based Engine]
+        US[User Service]
+        SS[Soil Data Service]
+        WS[Weather Service]
+        DS[Dashboard Service]
+    end
+
+    subgraph Data["💾 Data Layer"]
+        REPO[JPA Repositories]
+        DB[(MySQL / H2)]
+        OW[OpenWeather API]
+    end
+
+    LP --> WC
+    UI --> DC
+    API_CLIENT --> AC
+    API_CLIENT --> RC
+    API_CLIENT --> SC
+    Client --> JWT --> RBAC --> Application
+    Application --> Service
+    RS --> REPO
+    SS --> REPO
+    DS --> REPO
+    WS --> OW
+    WS --> REPO
+    REPO --> DB
+```
+
+**Data Flow:**
+1. User submits soil data (NPK, pH, moisture) + optional location
+2. System fetches real-time weather if location provided
+3. Recommendation engine scores all crops against soil/climate parameters
+4. Best match returned with confidence score and persisted to database
+5. Dashboard visualizations update with new data
+
+---
+
+## 🛠️ Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| Backend | Spring Boot 3.2, Spring Web, Spring Data JPA, Spring Security |
-| Build | Maven |
-| Database | MySQL 8.x |
-| Auth | JWT, BCrypt |
-| Frontend | Thymeleaf, Bootstrap 5, Chart.js |
-| External API | OpenWeather API |
+| **Backend** | Spring Boot 3.2, Spring Web, Spring Data JPA, Spring Security |
+| **Frontend** | Thymeleaf, Bootstrap 5, Chart.js, Custom CSS |
+| **Database** | MySQL 8.x (production) · H2 (demo mode) |
+| **Authentication** | JWT + BCrypt, HTTP-only cookies |
+| **External API** | OpenWeather API |
+| **Build** | Maven 3.8+, Maven Wrapper |
+| **DevOps** | Docker, Docker Compose |
+| **Language** | Java 17 |
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 crop-recommendation-system/
+├── 📄 README.md
+├── 📄 LICENSE                         # MIT License
+├── 📄 CONTRIBUTING.md                 # Contribution guidelines
+├── 📄 CHANGELOG.md                    # Version history
+├── 📄 .env.example                    # Environment template
+├── 📄 .gitignore
+├── 🐳 Dockerfile
+├── 🐳 docker-compose.yml
+├── 📄 pom.xml
+├── 📄 run.ps1                         # Quick start script
+│
 ├── src/main/java/com/crop/
-│   ├── controller/     # REST + Thymeleaf controllers
-│   ├── service/        # Business logic, weather, recommendation engine
-│   ├── repository/     # JPA repositories
-│   ├── entity/         # JPA entities
-│   ├── dto/            # Request/response DTOs
-│   ├── security/       # JWT filter, UserDetailsService
-│   ├── config/         # Security, WebClient, DataLoader
-│   ├── exception/      # Global exception handler
-│   └── CropRecommendationApplication.java
+│   ├── 🚀 CropRecommendationApplication.java
+│   │
+│   ├── config/                        # Configuration
+│   │   ├── SecurityConfig.java        #   Spring Security + JWT setup
+│   │   ├── WebClientConfig.java       #   WebClient for external APIs
+│   │   └── DataLoader.java            #   Database seeding
+│   │
+│   ├── controller/                    # Request Handlers
+│   │   ├── WebController.java         #   Thymeleaf page routes
+│   │   ├── AuthController.java        #   Login/Register REST API
+│   │   ├── RecommendationController.java
+│   │   ├── SoilDataController.java
+│   │   ├── WeatherController.java
+│   │   ├── CropController.java
+│   │   └── DashboardApiController.java
+│   │
+│   ├── service/                       # Business Logic
+│   │   ├── RecommendationService.java #   🧠 Core recommendation engine
+│   │   ├── UserService.java
+│   │   ├── SoilDataService.java
+│   │   ├── WeatherService.java
+│   │   └── DashboardService.java
+│   │
+│   ├── repository/                    # Data Access
+│   │   ├── CropRepository.java
+│   │   ├── RecommendationRepository.java
+│   │   ├── SoilDataRepository.java
+│   │   ├── UserRepository.java
+│   │   └── WeatherDataRepository.java
+│   │
+│   ├── entity/                        # Database Models
+│   │   ├── User.java
+│   │   ├── Crop.java
+│   │   ├── Recommendation.java
+│   │   ├── SoilData.java
+│   │   ├── WeatherData.java
+│   │   └── enums/Role.java
+│   │
+│   ├── dto/                           # Data Transfer Objects
+│   │   ├── LoginRequest.java
+│   │   ├── LoginResponse.java
+│   │   ├── RegisterRequest.java
+│   │   ├── RecommendationRequest.java
+│   │   ├── RecommendationResponse.java
+│   │   ├── SoilDataRequest.java
+│   │   ├── WeatherResponse.java
+│   │   └── ApiError.java
+│   │
+│   ├── security/                      # Authentication
+│   │   ├── JwtAuthenticationFilter.java
+│   │   ├── JwtUtil.java
+│   │   └── CustomUserDetailsService.java
+│   │
+│   └── exception/                     # Error Handling
+│       ├── GlobalExceptionHandler.java
+│       ├── BadRequestException.java
+│       └── ResourceNotFoundException.java
+│
 ├── src/main/resources/
-│   ├── templates/      # Thymeleaf (login, register, dashboard)
-│   ├── static/         # CSS/JS if any
-│   └── application.properties
+│   ├── templates/                     # Thymeleaf Views
+│   │   ├── home.html                  #   Landing page
+│   │   ├── login.html
+│   │   ├── register.html
+│   │   └── dashboard.html             #   Main dashboard
+│   ├── static/css/
+│   │   └── style.css                  #   Custom styles
+│   ├── application.properties         #   MySQL config
+│   └── application-demo.properties    #   H2 demo config
+│
 ├── database/
-│   └── schema.sql      # DDL, sample data, views, indexes
-├── docs/
-│   └── CNDC_Justification.md
-├── Dockerfile
-└── README.md
+│   └── schema.sql                     # DDL + sample data
+│
+└── docs/
+    └── CNDC_Justification.md          # Architecture decisions
 ```
 
 ---
 
-## Run with Docker (portable, git‑friendly)
+## 🚀 Quick Start
 
-Two steps: **build the JAR on your machine**, then **run app + MySQL in Docker**. The JAR is built locally to avoid a known Docker Desktop on Windows issue where long in-container builds drop the connection (`pipe/dockerDesktopLinuxEngine: file has already been closed`).
-
-**Requirements:** [Docker Desktop](https://docs.docker.com/get-docker/), **JDK 17**, and **Maven** (to build the JAR once).
-
-**Option A – one command (PowerShell):**
+### Option 1: PowerShell Script (Easiest)
 
 ```powershell
-cd d:\Project\crop-recommendation-system
-.\build-and-run.ps1
+# Production (MySQL required)
+.\run.ps1
+
+# Demo mode (no MySQL needed — uses H2 in-memory database)
+.\run.ps1 -Demo
 ```
-*(Runs `mvn clean package -DskipTests` then `docker compose up -d --build`.)*
 
-**Option B – manual:**
+### Option 2: Maven
 
-```powershell
-cd d:\Project\crop-recommendation-system
+```bash
+# With MySQL
+mvn spring-boot:run
+
+# With H2 (demo)
+mvn spring-boot:run -Dspring-boot.run.profiles=demo
+```
+
+### Option 3: Docker (Full Stack)
+
+```bash
 mvn clean package -DskipTests
 docker compose up -d --build
 ```
 
-- App: **http://localhost:8080**  
-- Login: `farmer@crop.com` / `password123`
+**Access:** http://localhost:8080
 
-**Optional:** Create a `.env` file with `OPENWEATHER_API_KEY=your_key` for weather features.
+### Prerequisites
 
-**Useful commands:**
+| Requirement | For Production | For Demo |
+|------------|---------------|----------|
+| JDK 17+ | ✅ Required | ✅ Required |
+| MySQL 8.x | ✅ Required | ❌ Not needed |
+| Maven | ✅ Or use `mvnw` | ✅ Or use `mvnw` |
+| Docker | ❌ Optional | ❌ Optional |
 
-```bash
-docker compose up -d        # Start in background
-docker compose logs -f app  # Follow app logs
-docker compose down         # Stop and remove containers (data volume kept)
-docker compose down -v      # Stop and remove containers + MySQL data
-```
-
-Data is stored in a Docker volume `crop-mysql-data` so it persists across restarts.
-
----
-
-## Run locally (localhost)
-
-If you prefer to run the app on your machine (e.g. for development) and only use Docker for MySQL:
-
-1. **Start only MySQL:**  
-   `docker compose up -d mysql`
-2. **Run the app:**  
-   `mvn spring-boot:run`  
-   (requires JDK 17 and Maven; app will use `localhost:3306` and the same DB credentials.)
-
-The repo works both ways: **Docker** (build JAR + `docker compose up -d`) or **local app + Docker MySQL** (`docker compose up -d mysql` then `mvn spring-boot:run`), and is safe to store in Git.
-
----
-
-## Prerequisites (for non-Docker run)
-
-- **JDK 17+**
-- **Maven 3.8+**
-- **MySQL 8.x** (running, with a user that can create DB and tables)
-
----
-
-## MySQL Setup (when not using Docker)
-
-1. Install and start MySQL.
-
-2. Create database and user (optional; app can create DB if URL has `createDatabaseIfNotExist=true`):
+### MySQL Setup
 
 ```sql
+-- Database is auto-created if URL has createDatabaseIfNotExist=true
+-- Or create manually:
 CREATE DATABASE IF NOT EXISTS crop_recommendation_db;
-CREATE USER IF NOT EXISTS 'cropuser'@'localhost' IDENTIFIED BY 'croppass';
-GRANT ALL PRIVILEGES ON crop_recommendation_db.* TO 'cropuser'@'localhost';
-FLUSH PRIVILEGES;
 ```
 
-3. (Optional) Run the provided schema and sample data:
-
-```bash
-mysql -u root -p < database/schema.sql
-```
-
-Or run only the DDL/sample part in your MySQL client. If you skip this, the app will create tables via JPA `ddl-auto=update` and **DataLoader** will create default users (see below).
-
----
-
-## application.properties Configuration
-
-Edit `src/main/resources/application.properties`:
+Update `src/main/resources/application.properties` with your MySQL password:
 
 ```properties
-# Database (match your MySQL)
-spring.datasource.url=jdbc:mysql://localhost:3306/crop_recommendation_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
 spring.datasource.username=root
-spring.datasource.password=root
-
-# OpenWeather API (required for weather-based recommendation)
-# Get key: https://openweathermap.org/api
-openweather.api.key=YOUR_OPENWEATHER_API_KEY
+spring.datasource.password=YOUR_PASSWORD
 ```
 
-- **MySQL:** Set `username` and `password` to your MySQL user.
-- **OpenWeather:** Replace `YOUR_OPENWEATHER_API_KEY` with your API key; without it, weather fetch will fail (recommendation still works with soil-only or cached weather).
-
 ---
 
-## How to Run the Project
+## 📡 API Reference
 
-**Windows (no Maven install):**
-- **Without MySQL (H2):** `.\run.ps1` — uses embedded H2, no database setup.
-- **With MySQL:** Create DB `crop_recommendation_db`, set `spring.datasource.password` in `application.properties`, then run `.\run-mysql.ps1`.
+All API endpoints require JWT authentication (except auth endpoints).
 
-**With Maven:**
+### Authentication
 
-1. **Start MySQL** (if using MySQL; ensure database exists or create it).
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/login` | Login, returns JWT |
+| `POST` | `/api/auth/register` | Register new user |
 
-2. **Build and run:**
+### Core APIs
+
+| Method | Endpoint | Role | Description |
+|--------|----------|------|-------------|
+| `POST` | `/api/recommendation` | FARMER+ | Get crop recommendation |
+| `POST` | `/api/soil` | FARMER+ | Submit soil data |
+| `GET` | `/api/soil` | FARMER+ | List user's soil data |
+| `GET` | `/api/weather/current?location=X` | ALL | Fetch & store weather |
+
+### Dashboard APIs
+
+| Method | Endpoint | Role | Description |
+|--------|----------|------|-------------|
+| `GET` | `/api/dashboard/farmer` | FARMER | NPK trends + recommendations |
+| `GET` | `/api/dashboard/admin` | ADMIN | Most recommended crops |
+| `GET` | `/api/dashboard/officer?location=X` | OFFICER | Weather trends |
+
+### Example: Get Recommendation
 
 ```bash
-cd crop-recommendation-system
-mvn clean install
-mvn spring-boot:run
-# Or with H2 (no MySQL): mvn spring-boot:run -Dspring-boot.run.profiles=demo
-```
-
-3. **Access the app:**
-
-- Web UI: **http://localhost:8080**
-- You will be redirected to **http://localhost:8080/login**
-
----
-
-## Default Users (Created by DataLoader)
-
-If the DB is empty, the app creates these users (password for all: **password123**):
-
-| Email | Role | Use |
-|-------|------|-----|
-| admin@crop.com | ADMIN | Admin dashboard, all APIs |
-| farmer@crop.com | FARMER | Farmer dashboard, soil, recommendation |
-| officer@crop.com | OFFICER | Officer dashboard, weather/rainfall trend |
-
----
-
-## How to Test APIs
-
-### 1. Login (get JWT)
-
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
+# 1. Login
+TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d "{\"email\":\"farmer@crop.com\",\"password\":\"password123\"}"
-```
+  -d '{"email":"farmer@crop.com","password":"password123"}' | jq -r '.token')
 
-Use the returned `token` in the next requests.
-
-### 2. Get crop recommendation (with soil data)
-
-```bash
+# 2. Get recommendation
 curl -X POST http://localhost:8080/api/recommendation \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d "{
-    \"soilData\": {
-      \"nitrogen\": 90,
-      \"phosphorus\": 42,
-      \"potassium\": 43,
-      \"ph\": 6.5,
-      \"moisture\": 50
+  -d '{
+    "soilData": {
+      "nitrogen": 90, "phosphorus": 42,
+      "potassium": 43, "ph": 6.5, "moisture": 50
     },
-    \"location\": \"London\"
-  }"
+    "location": "London"
+  }'
 ```
 
-### 3. Fetch and store weather
+---
 
-```bash
-curl -X GET "http://localhost:8080/api/weather/current?location=London" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+## 👥 Default Users
+
+Created automatically by `DataLoader` on first run (password: **`password123`**):
+
+| Email | Role | Dashboard |
+|-------|------|-----------|
+| `admin@crop.com` | ADMIN | Most recommended crops chart |
+| `farmer@crop.com` | FARMER | NPK trends + recommendation history |
+| `officer@crop.com` | OFFICER | Rainfall & temperature trends |
+
+---
+
+## 📸 Screenshots
+
+> **Landing Page** — Modern hero section with feature cards
+
+> **Dashboard** — NPK input with validation, recommendation result with confidence bar, trend charts
+
+> **Login** — Clean authentication page
+
+*Screenshots coming soon — run the app to see the full UI!*
+
+---
+
+## 🗺️ Roadmap
+
+### v1.0.0 — ✅ Current Release
+- [x] Core recommendation engine (rule-based)
+- [x] JWT authentication with role-based access
+- [x] Interactive dashboards with Chart.js
+- [x] OpenWeather API integration
+- [x] Modern landing page with feature cards
+- [x] Docker support
+- [x] H2 demo mode
+
+### v1.1.0 — Planned
+- [ ] ML-based recommendation model (scikit-learn / TensorFlow)
+- [ ] Crop disease detection module
+- [ ] Multi-language support (i18n)
+- [ ] Email notifications for recommendations
+
+### v2.0.0 — Future
+- [ ] AI recommendation module with historical data learning
+- [ ] Analytics & reporting module
+- [ ] Carbon credit tracking
+- [ ] Admin panel with user management UI
+- [ ] IoT sensor integration (MQTT)
+- [ ] Mobile app (React Native / Flutter)
+
+### Scalability Path
+
+```
+com.crop/
+├── recommendation/    # AI + rule-based engines
+├── analytics/         # Reports, trends, exports
+├── carbon/            # Carbon credit tracking
+├── admin/             # Admin panel controllers
+├── notification/      # Email, SMS, push
+└── iot/               # Sensor data ingestion
 ```
 
-### 4. Submit soil data
+---
 
-```bash
-curl -X POST http://localhost:8080/api/soil \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d "{
-    \"nitrogen\": 85,
-    \"phosphorus\": 40,
-    \"potassium\": 45,
-    \"ph\": 6.2,
-    \"moisture\": 55
-  }"
-```
+## 🤝 Contributing
 
-### 5. Dashboard data (for Chart.js / frontend)
-
-- Farmer: `GET /api/dashboard/farmer` (with JWT or cookie)
-- Admin: `GET /api/dashboard/admin`
-- Officer: `GET /api/dashboard/officer?location=London`
-
-Use the same JWT in `Authorization: Bearer <token>` or log in via the web UI (cookie-based).
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-## Demo Steps for Presentation
+## 📄 License
 
-1. **Start app and MySQL** as above.
-2. **Login (web):** Open http://localhost:8080 → Login with `farmer@crop.com` / `password123`.
-3. **Dashboard:** You are redirected to `/dashboard`; Farmer sees NPK trend and recommendations (after data exists).
-4. **Recommendation (API or UI):** Use the recommendation API with soil + optional `location`; show response with recommended crop and confidence.
-5. **Weather:** Call `/api/weather/current?location=London` (with auth); show that data is stored and used in recommendation/officer dashboard.
-6. **Roles:** Log in as Admin → show “Most recommended crops” chart; as Officer → show rainfall/temperature trend (after loading data for a location).
-7. **Security:** Show that `/api/dashboard/farmer` without token returns 401.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## Docker details
+## 🙏 Acknowledgments
 
-- **`docker-compose.yml`** – Defines `mysql` and `app` services. The app waits for MySQL to be healthy before starting.
-- **`Dockerfile`** – Multi-stage: Maven builds the JAR **inside Docker** (Debian-based image, no local Java/Maven needed), then a JRE 17 image runs the app.
-- **`.dockerignore`** – Keeps build context small (excludes `target/`, IDE files, etc.).
-- **Optional:** Copy `.env.example` to `.env` and set `OPENWEATHER_API_KEY` for weather; otherwise leave empty (recommendation still works without weather).
-
----
-
-## Features Summary
-
-- **User management:** Register, login (JWT + cookie for web), roles ADMIN / FARMER / OFFICER.
-- **Soil data:** Submit and list NPK, pH, moisture per user.
-- **Weather:** OpenWeather API integration; store in DB; use in recommendation.
-- **Recommendation engine:** Rule-based match of soil (and optional weather) to crop ideal ranges; persist recommendation and return best crop + confidence.
-- **Dashboards:** Farmer (NPK + recommendations), Admin (most recommended crops), Officer (rainfall/temperature trend) using Chart.js.
-- **Database:** JPA entities, constraints, indexes; `schema.sql` with sample data, joins, aggregation, nested query examples, and views.
-- **Security:** BCrypt, JWT, role-based access, global exception handling, validation.
-- **Docs:** `docs/CNDC_Justification.md` (architecture, HTTP vs MQTT, data flow, scalability, security, future IoT).
+- [Spring Boot](https://spring.io/projects/spring-boot) — Backend framework
+- [OpenWeather API](https://openweathermap.org/api) — Weather data provider
+- [Chart.js](https://www.chartjs.org/) — Dashboard visualizations
+- [Bootstrap 5](https://getbootstrap.com/) — UI components
 
 ---
 
-## License
-
-This project is for educational and demonstration purposes.
+<p align="center">
+  Made with ❤️ for smarter agriculture
+</p>

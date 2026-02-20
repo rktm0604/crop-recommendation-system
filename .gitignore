@@ -1,32 +1,65 @@
-# Compiled class files
+# ============================================================
+# SmartCrop — .gitignore
+# ============================================================
+
+# --- Build output ---
 target/
-
-# IDE
-.idea/
-*.iml
-.vscode/
-.settings/
-.project
-.classpath
-*.swp
-
-# Maven
-!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# OS
+# --- IDE: IntelliJ IDEA ---
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# --- IDE: Eclipse ---
+.settings/
+.project
+.classpath
+bin/
+
+# --- IDE: VS Code ---
+.vscode/
+
+# --- IDE: NetBeans ---
+nbproject/
+nbbuild/
+nbdist/
+nb-configuration.xml
+
+# --- OS ---
 .DS_Store
 Thumbs.db
+desktop.ini
+*.swp
+*~
 
-# H2 Database files
+# --- Maven ---
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# --- H2 Database ---
 data/
 *.db
 *.mv.db
 *.trace.db
 
-# Environment
+# --- Environment & Secrets ---
 .env
+*.env.local
 
-# Logs
+# --- Logs ---
 *.log
+logs/
+
+# --- Spring Boot ---
+*.pid
+hs_err_pid*
+
+# --- Package files ---
+*.jar
+!.mvn/wrapper/*.jar
+*.war
+*.ear
