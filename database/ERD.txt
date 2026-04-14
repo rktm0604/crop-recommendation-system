@@ -1,0 +1,198 @@
+# SmartCrop - ERD Diagram (Text-Based)
+
+## Entity Relationship Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           SMART CROP DATABASE                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────┐          ┌──────────────────────┐
+│     app_users       │          │        crops          │
+├──────────────────────┤          ├──────────────────────┤
+│ PK  id BIGINT       │          │ PK  id BIGINT        │
+│     name VARCHAR    │          │     crop_name VARCHAR │
+│     email VARCHAR   │          │     ideal_n_min       │
+│     password        │          │     ideal_n_max       │
+│     role VARCHAR    │          │     ideal_p_min       │
+└──────────┬───────────┘          │     ideal_p_max       │
+           │                      │     ideal_k_min       │
+           │ 1                    │     ideal_k_max       │
+           :                     │     ideal_ph_min      │
+           : N                   │     ideal_ph_max      │
+           :                     │     ideal_rain_min    │
+           ▼                     │     ideal_rain_max    │
+┌──────────────────────┐          └──────────┬───────────┘
+│     soil_data        │                     │
+├──────────────────────┤                     │ 1
+│ PK  id BIGINT        │                     : N
+│ FK  user_id BIGINT ──┼─────────────────────┤
+│     nitrogen         │                     ▼
+│     phosphorus      │          ┌──────────────────────┐
+│     potassium       │          │   recommendations    │
+│     ph              │          ├──────────────────────┤
+│     moisture        │          │ PK  id BIGINT        │
+│     recorded_date   │          │ FK  user_id BIGINT ──┼──► app_users
+└──────────────────────┘          │ FK  crop_id BIGINT ──┼──► crops
+                                  │     rec_date         │
+                                  │     confidence_score│
+                                  └──────────────────────┘
+
+┌──────────────────────┐
+│    weather_data     │
+├──────────────────────┤
+│ PK  id BIGINT       │
+│     temperature     │
+│     humidity         │
+│     rainfall        │
+│     location        │
+│     recorded_date   │
+└──────────────────────┘
+
+================================================================================
+                              RELATIONSHIPS
+================================================================================
+
+1. app_users ─────► soil_data
+   Relationship: ONE-to-MANY
+   Description: One farmer can record multiple soil tests
+   
+2. app_users ─────► recommendations  
+   Relationship: ONE-to-MANY
+   Description: One user can receive multiple crop recommendations
+
+3. crops ────────► recommendations
+   Relationship: ONE-to-MANY
+   Description: One crop can be recommended to many users
+
+================================================================================
+                              CARDINALITY SUMMARY
+================================================================================
+
+┌─────────────┬─────────────┬───────────────────────────────────────────────┐
+│   Table 1   │   Table 2   │              Relationship                    │
+├─────────────┼─────────────┼───────────────────────────────────────────────┤
+│  app_users  │  soil_data  │  1 User → N Soil Records                     │
+│  app_users  │recommend.   │  1 User → N Recommendations                  │
+│    crops    │recommend.   │  1 Crop  → N Recommendations                  │
+└─────────────┴─────────────┴───────────────────────────────────────────────┘
+
+================================================================================
+                              ATTRIBUTE DETAILS
+================================================================================
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ TABLE: app_users                                                           │
+├───────────────┬──────────────┬─────────────┬─────────────────────────────┤
+│ Attribute     │ Data Type    │ Constraints │ Description                 │
+├───────────────┼──────────────┼─────────────┼─────────────────────────────┤
+│ id            │ BIGINT       │ PK, AI      │ Primary key                 │
+│ name          │ VARCHAR(100) │ NOT NULL    │ Full name                   │
+│ email         │ VARCHAR(255) │ NOT NULL,   │ Login email (unique)       │
+│               │              │ UNIQUE      │                             │
+│ password      │ VARCHAR(255) │ NOT NULL    │ BCrypt hashed password      │
+│ role          │ VARCHAR(20)  │ NOT NULL,   │ ADMIN/FARMER/OFFICER        │
+│               │              │ CHECK       │                             │
+└───────────────┴──────────────┴─────────────┴─────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ TABLE: crops                                                               │
+├───────────────┬──────────────┬─────────────┬─────────────────────────────┤
+│ Attribute     │ Data Type    │ Constraints │ Description                 │
+├───────────────┼──────────────┼─────────────┼─────────────────────────────┤
+│ id            │ BIGINT       │ PK, AI      │ Primary key                 │
+│ crop_name     │ VARCHAR(100) │ NOT NULL,   │ Crop name (unique)          │
+│               │              │ UNIQUE      │                             │
+│ ideal_n_min   │ DOUBLE       │ NOT NULL    │ Min ideal Nitrogen          │
+│ ideal_n_max   │ DOUBLE       │ NOT NULL    │ Max ideal Nitrogen          │
+│ ideal_p_min   │ DOUBLE       │ NOT NULL    │ Min ideal Phosphorus        │
+│ ideal_p_max   │ DOUBLE       │ NOT NULL    │ Max ideal Phosphorus        │
+│ ideal_k_min   │ DOUBLE       │ NOT NULL    │ Min ideal Potassium         │
+│ ideal_k_max   │ DOUBLE       │ NOT NULL    │ Max ideal Potassium         │
+│ ideal_ph_min  │ DOUBLE       │ NOT NULL    │ Min ideal pH                │
+│ ideal_ph_max  │ DOUBLE       │ NOT NULL    │ Max ideal pH                │
+│ ideal_rain_min│ DOUBLE       │ NOT NULL    │ Min ideal rainfall (mm)     │
+│ ideal_rain_max│ DOUBLE       │ NOT NULL    │ Max ideal rainfall (mm)     │
+└───────────────┴──────────────┴─────────────┴─────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ TABLE: soil_data                                                           │
+├───────────────┬──────────────┬─────────────┬─────────────────────────────┤
+│ Attribute     │ Data Type    │ Constraints │ Description                 │
+├───────────────┼──────────────┼─────────────┼─────────────────────────────┤
+│ id            │ BIGINT       │ PK, AI      │ Primary key                 │
+│ user_id       │ BIGINT       │ NOT NULL,   │ FK to app_users             │
+│               │              │ FK          │                             │
+│ nitrogen      │ DOUBLE       │ NOT NULL    │ N value (mg/kg)             │
+│ phosphorus    │ DOUBLE       │ NOT NULL    │ P value (mg/kg)             │
+│ potassium     │ DOUBLE       │ NOT NULL    │ K value (mg/kg)             │
+│ ph            │ DOUBLE       │ NOT NULL,   │ pH value (0-14)             │
+│               │              │ CHECK       │                             │
+│ moisture      │ DOUBLE       │ NOT NULL,   │ Moisture % (0-100)         │
+│               │              │ CHECK       │                             │
+│ recorded_date │ DATETIME     │ NOT NULL    │ Timestamp of recording      │
+└───────────────┴──────────────┴─────────────┴─────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ TABLE: weather_data                                                        │
+├───────────────┬──────────────┬─────────────┬─────────────────────────────┤
+│ Attribute     │ Data Type    │ Constraints │ Description                 │
+├───────────────┼──────────────┼─────────────┼─────────────────────────────┤
+│ id            │ BIGINT       │ PK, AI      │ Primary key                 │
+│ temperature   │ DOUBLE       │ NOT NULL    │ Temperature (°C)            │
+│ humidity      │ DOUBLE       │ NOT NULL,   │ Humidity % (0-100)          │
+│               │              │ CHECK       │                             │
+│ rainfall      │ DOUBLE       │ NOT NULL    │ Rainfall (mm)               │
+│ location      │ VARCHAR(255) │ NOT NULL    │ City/location name          │
+│ recorded_date │ DATETIME     │ NOT NULL    │ Timestamp of recording      │
+└───────────────┴──────────────┴─────────────┴─────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ TABLE: recommendations                                                     │
+├───────────────┬──────────────┬─────────────┬─────────────────────────────┤
+│ Attribute     │ Data Type    │ Constraints │ Description                 │
+├───────────────┼──────────────┼─────────────┼─────────────────────────────┤
+│ id            │ BIGINT       │ PK, AI      │ Primary key                 │
+│ user_id       │ BIGINT       │ NOT NULL,   │ FK to app_users             │
+│               │              │ FK          │                             │
+│ crop_id       │ BIGINT       │ NOT NULL,   │ FK to crops                 │
+│               │              │ FK          │                             │
+│ rec_date      │ DATETIME     │ NOT NULL    │ Timestamp of recommendation│
+│ confidence    │ DOUBLE       │ NOT NULL,   │ Score 0-100%                │
+│               │              │ CHECK       │                             │
+└───────────────┴──────────────┴─────────────┴─────────────────────────────┘
+
+================================================================================
+                              KEYS SUMMARY
+================================================================================
+
+Primary Keys (PK):
+  • app_users.id
+  • crops.id
+  • soil_data.id
+  • weather_data.id
+  • recommendations.id
+
+Foreign Keys (FK):
+  • soil_data.user_id → app_users.id (ON DELETE CASCADE)
+  • recommendations.user_id → app_users.id (ON DELETE CASCADE)
+  • recommendations.crop_id → crops.id (ON DELETE CASCADE)
+
+Unique Keys:
+  • app_users.email
+  • crops.crop_name
+
+================================================================================
+                              INDEXES
+================================================================================
+
+• idx_user_email (app_users.email)
+• idx_user_role (app_users.role)
+• idx_crop_name (crops.crop_name)
+• idx_soil_user_id (soil_data.user_id)
+• idx_soil_recorded_date (soil_data.recorded_date)
+• idx_weather_location (weather_data.location)
+• idx_weather_recorded_date (weather_data.recorded_date)
+• idx_recommendation_user_id (recommendations.user_id)
+• idx_recommendation_crop_id (recommendations.crop_id)
+• idx_recommendation_date (recommendations.recommendation_date)
