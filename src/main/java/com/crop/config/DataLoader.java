@@ -38,15 +38,6 @@ public class DataLoader implements CommandLineRunner {
 
     private void loadData() {
         String defaultPassword = passwordEncoder.encode("password123");
-        if (!userRepository.existsByEmail("admin@crop.com")) {
-            userRepository.save(User.builder()
-                    .name("Admin User")
-                    .email("admin@crop.com")
-                    .password(defaultPassword)
-                    .role(Role.ADMIN)
-                    .build());
-            log.info("Default admin user created (admin@crop.com / password123)");
-        }
         if (!userRepository.existsByEmail("farmer@crop.com")) {
             userRepository.save(User.builder()
                     .name("John Farmer")
@@ -55,15 +46,6 @@ public class DataLoader implements CommandLineRunner {
                     .role(Role.FARMER)
                     .build());
             log.info("Default farmer user created (farmer@crop.com / password123)");
-        }
-        if (!userRepository.existsByEmail("officer@crop.com")) {
-            userRepository.save(User.builder()
-                    .name("Jane Officer")
-                    .email("officer@crop.com")
-                    .password(defaultPassword)
-                    .role(Role.OFFICER)
-                    .build());
-            log.info("Default officer user created (officer@crop.com / password123)");
         }
         if (cropRepository.count() == 0) {
             List<Crop> crops = List.of(

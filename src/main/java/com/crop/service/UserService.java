@@ -51,7 +51,7 @@ public class UserService {
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
+                .role(Role.FARMER)
                 .build();
         user = userRepository.save(user);
         log.info("User registered: {}", user.getEmail());

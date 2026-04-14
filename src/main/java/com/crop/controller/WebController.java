@@ -58,7 +58,6 @@ public class WebController {
     @GetMapping("/register")
     public String registerPage(Model model) {
         model.addAttribute("registerRequest", new com.crop.dto.RegisterRequest());
-        model.addAttribute("roles", Role.values());
         return "register";
     }
 
