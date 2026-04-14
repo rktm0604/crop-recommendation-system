@@ -1,28 +1,36 @@
-# Smart Crop Recommendation System - Full stack (app + MySQL)
-# Run: docker compose up -d
-# App: http://localhost:8080
+# =============================================================================
+# SmartCrop - Production Docker Compose
+# =============================================================================
+# Usage:
+#   1. Set environment variables (see .env.example)
+#   2. Build JAR: mvn clean package -DskipTests
+#   3. Run: docker compose up -d --build
+#   4. App: http://localhost:8080
+# =============================================================================
 
 services:
   mysql:
     image: mysql:8.0
     container_name: crop-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: crop_recommendation_db
-      MYSQL_USER: cropuser
-      MYSQL_PASSWORD: croppass
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_NAME:-crop_recommendation_db}
+      MYSQL_USER: ${DB_USERNAME:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-root}
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - crop-mysql-data:/var/lib/mysql
+      - ./database/schema_production.sql:/docker-entrypoint-initdb.d/1-schema.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-root}"]
       interval: 5s
       timeout: 5s
       retries: 10
-      start_period: 15s
+      start_period: 30s
     networks:
       - crop-net
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
   app:
     build:
@@ -30,11 +38,20 @@ services:
       dockerfile: Dockerfile
     container_name: crop-app
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/crop_recommendation_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: cropuser
-      SPRING_DATASOURCE_PASSWORD: croppass
-      # Optional: set your OpenWeather API key for weather features
+      # Database Configuration
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NAME:-crop_recommendation_db}?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-root}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-root}
+      
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET:-SmartCropJWTSecretKeyForProduction256Bits}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      
+      # OpenWeather API
       OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
+      
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
     ports:
       - "8080:8080"
     depends_on:
@@ -43,6 +60,12 @@ services:
     networks:
       - crop-net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 volumes:
   crop-mysql-data:
