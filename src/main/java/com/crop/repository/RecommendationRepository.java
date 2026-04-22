@@ -23,6 +23,9 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     List<Recommendation> findByUserIdWithCrop(@Param("userId") Long userId,
             org.springframework.data.domain.Pageable pageable);
 
+    @Query("SELECT r FROM Recommendation r JOIN FETCH r.user JOIN FETCH r.crop ORDER BY r.recommendationDate DESC")
+    List<Recommendation> findAllWithUserAndCrop(org.springframework.data.domain.Pageable pageable);
+
     @Query("SELECT r FROM Recommendation r JOIN FETCH r.user JOIN FETCH r.crop WHERE r.confidenceScore >= :score ORDER BY r.confidenceScore DESC")
     List<Recommendation> findByConfidenceScoreGreaterThan(@Param("score") Double score);
 }

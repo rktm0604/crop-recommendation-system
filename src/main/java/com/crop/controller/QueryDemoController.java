@@ -20,18 +20,21 @@ public class QueryDemoController {
      * Query 1: SELECT with JOIN
      */
     @GetMapping("/query-join")
-    public ResponseEntity<List<Map<String, Object>>> getJoinQuery() {
-        var recs = recommendationRepository.findAll();
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (var rec : recs) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("farmerName", rec.getUser().getName());
-            row.put("cropName", rec.getCrop().getCropName());
-            row.put("confidenceScore", rec.getConfidenceScore().intValue());
-            result.add(row);
-            if (result.size() >= 5) break;
+    public ResponseEntity<?> getJoinQuery() {
+        try {
+            var recs = recommendationRepository.findAllWithUserAndCrop(org.springframework.data.domain.PageRequest.of(0, 5));
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (var rec : recs) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("farmerName", rec.getUser().getName());
+                row.put("cropName", rec.getCrop().getCropName());
+                row.put("confidenceScore", rec.getConfidenceScore().intValue());
+                result.add(row);
+            }
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
-        return ResponseEntity.ok(result);
     }
 
     /**
