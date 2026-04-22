@@ -430,6 +430,14 @@ MySQL → Spring Boot JPA → REST API → Chart.js → Dashboard
                     <input type="number" id="recMoisture" value="100" min="0" max="500">
                 </div>
             </div>
+            <div style="margin-top:1rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:0.85rem;color:#64748b;font-weight:600;">Results:</label>
+                <select id="recLimit" class="form-select" style="width:auto;font-size:0.8rem;">
+                    <option value="3">Top 3</option>
+                    <option value="5" selected>Top 5</option>
+                    <option value="10">Top 10</option>
+                </select>
+            </div>
             <button class="btn-gradient mt-3" onclick="getRecommendation()">Get Recommendation</button>
             <div id="recResult" class="mt-3"></div>
         </div>
@@ -540,7 +548,8 @@ ORDER BY r.confidence_score DESC;`,
         }
 
         function getRecommendation() {
-            fetch('/api/recommendation', {
+            const limit = document.getElementById('recLimit').value;
+            fetch('/api/recommendation/multiple?limit=' + limit, {
                 method: 'POST',
                 credentials:'include',
                 headers: {'Content-Type':'application/json'},
@@ -556,14 +565,27 @@ ORDER BY r.confidence_score DESC;`,
             })
             .then(r => r.json())
             .then(data => {
-                const name = data.cropName || 'N/A';
-                const score = data.confidenceScore || 0;
-                document.getElementById('recResult').innerHTML = 
-                    `<div class="result-card">
-                        <div class="crop-name">${cropEmoji[name] || '🌱'} ${name}</div>
-                        <div class="confidence-label"><span>Confidence</span><span style="color:#16a34a;font-weight:700">${score.toFixed(1)}%</span></div>
-                        <div class="confidence-bar"><div class="confidence-fill" style="width:${score}%"></div></div>
+                const recs = data.recommendations;
+                if (!recs || recs.length === 0) {
+                    document.getElementById('recResult').innerHTML = '<p style="color:#64748b">No recommendations found.</p>';
+                    return;
+                }
+                
+                let html = `<div style="display:grid;gap:0.75rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">`;
+                recs.forEach(rec => {
+                    const rankColor = rec.rank === 1 ? '#16a34a' : rec.rank === 2 ? '#2563eb' : rec.rank === 3 ? '#7c3aed' : '#64748b';
+                    const medal = rec.rank === 1 ? '🥇' : rec.rank === 2 ? '🥈' : rec.rank === 3 ? '🥉' : `#${rec.rank}`;
+                    html += `<div class="result-card" style="border-left:4px solid ${rankColor};">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                            <span style="font-size:1.1rem;font-weight:700;">${medal} ${cropEmoji[rec.cropName] || '🌱'} ${rec.cropName}</span>
+                        </div>
+                        <div class="confidence-label"><span>Confidence</span><span style="color:${rankColor};font-weight:700">${rec.confidenceScore}%</span></div>
+                        <div class="confidence-bar"><div class="confidence-fill" style="width:${rec.confidenceScore}%;background:${rankColor}"></div></div>
                     </div>`;
+                });
+                html += '</div>';
+                
+                document.getElementById('recResult').innerHTML = html;
             });
         }
 

@@ -1,5 +1,6 @@
 package com.crop.controller;
 
+import com.crop.dto.MultipleRecommendationResponse;
 import com.crop.dto.RecommendationRequest;
 import com.crop.dto.RecommendationResponse;
 import com.crop.entity.User;
@@ -27,6 +28,17 @@ public class RecommendationController {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow();
         RecommendationResponse response = recommendationService.getRecommendation(user.getId(), user, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/multiple")
+    public ResponseEntity<MultipleRecommendationResponse> getMultipleRecommendations(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody RecommendationRequest request,
+            @RequestParam(defaultValue = "5") int limit) {
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow();
+        MultipleRecommendationResponse response = recommendationService.getMultipleRecommendations(user.getId(), user, request, limit);
         return ResponseEntity.ok(response);
     }
 }
