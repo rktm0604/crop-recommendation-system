@@ -123,6 +123,10 @@
         
         .flow-arrow { font-size: 1.25rem; color: #94a3b8; }
         
+        .flow-arrow-step { font-size: 1.5rem; color: #2563eb; font-weight: bold; }
+        
+        .flow-box { transition: all 0.3s ease; cursor: default; }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -210,6 +214,44 @@
             <div class="section-card cndc">
                 <h3>🌐 CNDC Implementation</h3>
                 
+                <!-- LIVE WORKING DEMO -->
+                <h5 style="color:#2563eb;margin-bottom:1rem;">🔄 Real-Time Data Flow Demo (Click Start)</h5>
+                <div id="flowDemo" style="background:#f8fafc;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
+                    <!-- Flow Steps -->
+                    <div id="flowSteps" style="display:flex;align-items:center;justify-content:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div id="step1" class="flow-box" style="padding:0.75rem 1rem;background:#fff;border-radius:8px;text-align:center;border:2px solid #e2e8f0;min-width:100px;">
+                            <div style="font-size:1.5rem;">🌐</div>
+                            <div style="font-size:0.7rem;font-weight:600;">Client</div>
+                        </div>
+                        <div class="flow-arrow-step">→</div>
+                        <div id="step2" class="flow-box" style="padding:0.75rem 1rem;background:#fff;border-radius:8px;text-align:center;border:2px solid #e2e8f0;min-width:100px;">
+                            <div style="font-size:1.5rem;">⚙️</div>
+                            <div style="font-size:0.7rem;font-weight:600;">Server</div>
+                        </div>
+                        <div class="flow-arrow-step">→</div>
+                        <div id="step3" class="flow-box" style="padding:0.75rem 1rem;background:#fff;border-radius:8px;text-align:center;border:2px solid #e2e8f0;min-width:100px;">
+                            <div style="font-size:1.5rem;">💾</div>
+                            <div style="font-size:0.7rem;font-weight:600;">MySQL</div>
+                        </div>
+                        <div class="flow-arrow-step">→</div>
+                        <div id="step4" class="flow-box" style="padding:0.75rem 1rem;background:#fff;border-radius:8px;text-align:center;border:2px solid #e2e8f0;min-width:100px;">
+                            <div style="font-size:1.5rem;">📡</div>
+                            <div style="font-size:0.7rem;font-weight:600;">Response</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step Status -->
+                    <div id="flowStatus" style="background:#fff;border-radius:8px;padding:1rem;min-height:60px;border:1px solid #e2e8f0;">
+                        <div id="statusText" style="font-size:0.85rem;color:#64748b;text-align:center;">
+                            Click "Start Demo" to see real-time data flow
+                        </div>
+                    </div>
+                    
+                    <button id="startFlowBtn" class="btn-gradient" onclick="startFlowDemo()" style="margin-top:1rem;">
+                        ▶ Start Data Flow Demo
+                    </button>
+                </div>
+
                 <h5 style="color:#2563eb;">OSI Model Layers</h5>
                 <div class="flow-diagram" style="flex-direction:column;align-items:stretch;gap:0.5rem;">
                     <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
@@ -479,6 +521,60 @@ ORDER BY r.confidence_score DESC;`,
             },
             options: {responsive:true, maintainAspectRatio:false}
         });
+
+        // ====== CNDC DATA FLOW DEMO ======
+        const flowSteps = [
+            {id:'step1', label:'Client sends request...', color:'#dbeafe', border:'#2563eb'},
+            {id:'step2', label:'Server validates JWT...', color:'#dcfce7', border:'#16a34a'},
+            {id:'step3', label:'MySQL executes query...', color:'#fef3c7', border:'#d97706'},
+            {id:'step4', label:'Response sent to Client!', color:'#ede9fe', border:'#7c3aed'}
+        ];
+
+        function startFlowDemo() {
+            const btn = document.getElementById('startFlowBtn');
+            const statusText = document.getElementById('statusText');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Running Demo...';
+            
+            let stepIndex = 0;
+            const interval = setInterval(() => {
+                // Reset previous step
+                if (stepIndex > 0) {
+                    const prevStep = flowSteps[stepIndex - 1];
+                    document.getElementById(prevStep.id).style.background = '#fff';
+                    document.getElementById(prevStep.id).style.borderColor = '#e2e8f0';
+                }
+                
+                // Highlight current step
+                const step = flowSteps[stepIndex];
+                document.getElementById(step.id).style.background = step.color;
+                document.getElementById(step.id).style.borderColor = step.border;
+                document.getElementById(step.id).style.transform = 'scale(1.1)';
+                statusText.innerHTML = `<span style="color:${step.border}">✓ ${step.label}</span>`;
+                
+                stepIndex++;
+                
+                if (stepIndex >= flowSteps.length) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        statusText.innerHTML = '<span style="color:#16a34a">✅ <b>Data Flow Complete!</b> Request processed successfully</span>';
+                        btn.disabled = false;
+                        btn.textContent = '▶ Run Again';
+                        
+                        // Reset boxes
+                        setTimeout(() => {
+                            flowSteps.forEach(s => {
+                                document.getElementById(s.id).style.background = '#fff';
+                                document.getElementById(s.id).style.borderColor = '#e2e8f0';
+                                document.getElementById(s.id).style.transform = 'scale(1)';
+                            });
+                            statusText.textContent = 'Click "Start Demo" to see real-time data flow';
+                        }, 3000);
+                    }, 500);
+                }
+            }, 1000);
+        }
     </script>
 </body>
 </html>
