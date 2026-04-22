@@ -178,16 +178,30 @@
                     <div class="flow-node client">crops</div>
                 </div>
 
-                <h5 style="color:#16a34a;">SQL Query (JOIN)</h5>
-                <div class="query-box">
+                <!-- SQL Query Demos -->
+                <h5 style="color:#16a34a;margin-top:1.5rem;">SQL Query Demos</h5>
+                
+                <!-- Query Type Selector -->
+                <div class="mb-3">
+                    <select id="queryType" class="form-select" style="max-width:300px;" onchange="changeQuery()">
+                        <option value="join">1. SELECT with JOIN</option>
+                        <option value="groupby">2. GROUP BY (Most Recommended Crops)</option>
+                        <option value="nested">3. Nested Query (Above Average)</option>
+                        <option value="where">4. WHERE (High Confidence)</option>
+                    </select>
+                </div>
+
+                <!-- Query Display -->
+                <div class="query-box" id="queryDisplay">
                     <span class="keyword">SELECT</span> u.name, c.crop_name, r.confidence_score<br>
                     <span class="keyword">FROM</span> recommendations r<br>
                     <span class="keyword">JOIN</span> app_users u <span class="keyword">ON</span> r.user_id = u.id<br>
-                    <span class="keyword">JOIN</span> crops c <span class="keyword">ON</span> r.crop_id = c.id;
+                    <span class="keyword">JOIN</span> crops c <span class="keyword">ON</span> r.crop_id = c.id<br>
+                    <span class="keyword">LIMIT</span> 5;
                 </div>
 
-                <button class="btn-gradient" onclick="runDbmsQuery()">▶ Run Query</button>
-                <div id="dbmsResult" class="mt-3" style="max-height:200px;overflow-y:auto;"></div>
+                <button class="btn-gradient" onclick="runSelectedQuery()">▶ Run Query</button>
+                <div id="dbmsResult" class="mt-3" style="max-height:250px;overflow-y:auto;"></div>
             </div>
         </div>
 
@@ -280,10 +294,49 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
         const cropEmoji = {'Rice':'🌾','Wheat':'🌾','Maize':'🌽','Cotton':'☁️','Sugarcane':'🎋','Jute':'🧵','Coconut':'🥥','Papaya':'🍈','Orange':'🍊','Apple':'🍎','Grapes':'🍇','Mango':'🥭','Bean':'🫘','Lentil':'🫘','Chickpea':'🫘'};
+
+        // Query definitions
+        const queries = {
+            join: {
+                sql: `SELECT u.name, c.crop_name, r.confidence_score
+FROM recommendations r
+JOIN app_users u ON r.user_id = u.id
+JOIN crops c ON r.crop_id = c.id
+LIMIT 5;`,
+                name: 'SELECT with JOIN'
+            },
+            groupby: {
+                sql: `SELECT c.crop_name, COUNT(r.id) as total, AVG(r.confidence_score) as avg_conf
+FROM crops c
+LEFT JOIN recommendations r ON c.id = r.crop_id
+GROUP BY c.id, c.crop_name
+ORDER BY total DESC;`,
+                name: 'GROUP BY (Most Recommended Crops)'
+            },
+            nested: {
+                sql: `SELECT c.crop_name, ROUND(AVG(r.confidence_score),2) as avg_conf
+FROM crops c
+JOIN recommendations r ON c.id = r.crop_id
+GROUP BY c.id, c.crop_name
+HAVING AVG(r.confidence_score) > (
+    SELECT AVG(confidence_score) FROM recommendations
+);`,
+                name: 'Nested Query (Above Average)'
+            },
+            where: {
+                sql: `SELECT u.name, c.crop_name, r.confidence_score, r.recommendation_date
+FROM recommendations r
+JOIN app_users u ON r.user_id = u.id
+JOIN crops c ON r.crop_id = c.id
+WHERE r.confidence_score > 80
+ORDER BY r.confidence_score DESC;`,
+                name: 'WHERE (High Confidence > 80%)'
+            }
+        };
 
         function showSection(id) {
             document.querySelectorAll('.subject-tab').forEach(t => t.classList.remove('active'));
@@ -292,24 +345,59 @@
             document.getElementById(id).classList.add('active');
         }
 
-        function runDbmsQuery() {
-            fetch('/api/dashboard/admin', {credentials:'include'})
+        function changeQuery() {
+            const qtype = document.getElementById('queryType').value;
+            const q = queries[qtype];
+            document.getElementById('queryDisplay').innerHTML = q.sql.replace(/\n/g, '<br>').replace(/FROM/g, '<br>FROM').replace(/JOIN/g, '<br>JOIN').replace(/WHERE/g, '<br>WHERE').replace(/GROUP BY/g, '<br>GROUP BY').replace(/HAVING/g, '<br>HAVING').replace(/ORDER BY/g, '<br>ORDER BY').replace(/LIMIT/g, '<br>LIMIT');
+        }
+
+        function runSelectedQuery() {
+            const qtype = document.getElementById('queryType').value;
+            let url = '/api/evaluation/query-';
+            
+            if (qtype === 'join') url += 'join';
+            else if (qtype === 'groupby') url += 'groupby';
+            else if (qtype === 'nested') url += 'nested';
+            else if (qtype === 'where') url += 'where';
+            
+            fetch(url, {credentials:'include'})
             .then(r => r.json())
             .then(data => {
-                const rows = data.topCropNames || [];
-                let html = '<table class="table table-sm table-bordered"><tr style="background:#f8fafc"><th>Crop</th><th>Count</th></tr>';
-                rows.forEach((name, i) => {
-                    html += `<tr><td>${name}</td><td>${data.topCropCounts?.[i] || 0}</td></tr>`;
-                });
+                let html = '<table class="table table-sm table-bordered" style="font-size:0.8rem;"><tr style="background:#f8fafc">';
+                
+                if (qtype === 'join') {
+                    html += '<th>Farmer</th><th>Crop</th><th>Confidence</th></tr>';
+                    data.forEach(row => {
+                        html += `<tr><td>${row.farmerName}</td><td>${row.cropName}</td><td>${row.confidenceScore}%</td></tr>`;
+                    });
+                } else if (qtype === 'groupby') {
+                    html += '<th>Crop</th><th>Total</th><th>Avg Confidence</th></tr>';
+                    data.forEach(row => {
+                        html += `<tr><td>${row.cropName}</td><td>${row.total}</td><td>${row.avgConfidence}%</td></tr>`;
+                    });
+                } else if (qtype === 'nested') {
+                    html += '<th>Crop</th><th>Avg Confidence</th></tr>';
+                    data.forEach(row => {
+                        html += `<tr><td>${row.cropName}</td><td>${row.avgConfidence}%</td></tr>`;
+                    });
+                } else if (qtype === 'where') {
+                    html += '<th>Farmer</th><th>Crop</th><th>Score</th><th>Date</th></tr>';
+                    data.forEach(row => {
+                        html += `<tr><td>${row.farmerName}</td><td>${row.cropName}</td><td>${row.confidenceScore}%</td><td>${row.date}</td></tr>`;
+                    });
+                }
                 html += '</table>';
                 document.getElementById('dbmsResult').innerHTML = html;
+            })
+            .catch(err => {
+                document.getElementById('dbmsResult').innerHTML = '<p style="color:red">Error running query: ' + err.message + '</p>';
             });
         }
 
         function getRecommendation() {
             fetch('/api/recommendation', {
                 method: 'POST',
-                credentials: 'include',
+                credentials:'include',
                 headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({
                     soilData: {
