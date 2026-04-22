@@ -210,28 +210,72 @@
             <div class="section-card cndc">
                 <h3>🌐 CNDC Implementation</h3>
                 
-                <h5 style="color:#2563eb;">Network Architecture</h5>
+                <h5 style="color:#2563eb;">OSI Model Layers</h5>
+                <div class="flow-diagram" style="flex-direction:column;align-items:stretch;gap:0.5rem;">
+                    <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+                        <div class="flow-node client" style="flex:1;background:#dbeafe;color:#2563eb;">Layer 7: Application (Browser, REST API)</div>
+                        <div class="flow-node client" style="flex:1;background:#dbeafe;color:#2563eb;">Layer 6: Presentation (JSON, TLS)</div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+                        <div class="flow-node server" style="flex:1;">Layer 5: Session (JWT, Cookies)</div>
+                        <div class="flow-node server" style="flex:1;">Layer 4: Transport (TCP, HTTP)</div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+                        <div class="flow-node db" style="flex:1;background:#fef3c7;color:#d97706;">Layer 3: Network (IP, Router)</div>
+                        <div class="flow-node db" style="flex:1;background:#fef3c7;color:#d97706;">Layer 2: Data Link (Ethernet)</div>
+                    </div>
+                    <div class="flow-node" style="background:#e2e8f0;color:#64748b;">Layer 1: Physical (Cable, WiFi)</div>
+                </div>
+
+                <h5 style="color:#2563eb;">Network Architecture (3-Tier)</h5>
                 <div class="flow-diagram">
-                    <div class="flow-node client">Browser</div>
-                    <span class="flow-arrow">HTTPS</span>
-                    <div class="flow-node server">Spring Boot</div>
+                    <div class="flow-node client"><b>Client</b><br/>Browser/Mobile</div>
+                    <span class="flow-arrow">HTTP/S</span>
+                    <div class="flow-node server"><b>Web Server</b><br/>Nginx/Apache</div>
+                    <span class="flow-arrow">AJP</span>
+                    <div class="flow-node server"><b>App Server</b><br/>Spring Boot</div>
                     <span class="flow-arrow">JDBC</span>
-                    <div class="flow-node db">MySQL</div>
+                    <div class="flow-node db"><b>Database</b><br/>MySQL</div>
+                </div>
+
+                <h5 style="color:#2563eb;">Request-Response Flow</h5>
+                <div class="query-box" style="font-size:0.75rem;">
+<span style="color:#22c55e;">// Step 1: Client sends HTTP Request</span>
+POST /api/recommendation HTTP/1.1
+Host: localhost:8080
+Authorization: Bearer &lt;jwt_token&gt;
+Content-Type: application/json
+
+<span style="color:#22c55e;">// Step 2: Server processes & validates</span>
+✅ JWT Authentication
+✅ Input Validation (JSR-303)
+✅ Business Logic (Recommendation Engine)
+
+<span style="color:#22c55e;">// Step 3: Database query via JPA</span>
+SELECT * FROM crops WHERE...
+
+<span style="color:#22c55e;">// Step 4: Response to Client</span>
+HTTP/1.1 200 OK
+Content-Type: application/json
+&#123;"cropName":"Rice","confidenceScore":92.5&#125;
                 </div>
 
                 <h5 style="color:#2563eb;">Protocol Selection</h5>
                 <table class="table table-bordered table-sm" style="font-size:0.8rem;">
-                    <tr style="background:#f8fafc;"><th>Protocol</th><th>Use Case</th></tr>
-                    <tr><td>HTTP/HTTPS</td><td>REST API</td></tr>
-                    <tr><td>JWT</td><td>Authentication</td></tr>
-                    <tr><td>WebClient</td><td>External API</td></tr>
-                    <tr><td>JDBC/JPA</td><td>Database</td></tr>
+                    <tr style="background:#f8fafc;"><th>Protocol</th><th>Layer</th><th>Use Case</th></tr>
+                    <tr><td>HTTP/HTTPS</td><td>7 (App)</td><td>REST API</td></tr>
+                    <tr><td>JWT</td><td>7 (App)</td><td>Authentication</td></tr>
+                    <tr><td>WebClient</td><td>7 (App)</td><td>External API (OpenWeather)</td></tr>
+                    <tr><td>JDBC/JPA</td><td>7 (App)</td><td>Database ORM</td></tr>
+                    <tr><td>TCP/IP</td><td>4 (Transport)</td><td>Connection</td></tr>
                 </table>
 
-                <h5 style="color:#2563eb;">Data Flow</h5>
+                <h5 style="color:#2563eb;">Data Transmission Summary</h5>
                 <div class="query-box" style="font-size:0.75rem;">
-                    Client → HTTPS → Server → JDBC → MySQL<br>
-                    Server → HTTPS → OpenWeather API → Server → Client
+1. <b>Client → Server:</b> HTTPS → JWT Token → Spring Security
+2. <b>Server → Database:</b> JDBC → JPA → MySQL
+3. <b>Server → External:</b> HTTPS → WebClient → OpenWeather API
+4. <b>Server → Client:</b> JSON Response → HTTPS
                 </div>
             </div>
         </div>
