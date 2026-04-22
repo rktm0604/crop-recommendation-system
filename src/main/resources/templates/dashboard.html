@@ -214,42 +214,54 @@
             <div class="section-card cndc">
                 <h3>🌐 CNDC Implementation</h3>
                 
-                <!-- LIVE WORKING DEMO -->
-                <h5 style="color:#2563eb;margin-bottom:1rem;">🔄 Real-Time Data Flow Demo (Click Start)</h5>
-                <div id="flowDemo" style="background:#f8fafc;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
-                    <!-- Flow Steps -->
-                    <div id="flowSteps" style="display:flex;align-items:center;justify-content:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;">
-                        <div id="step1" class="flow-box" style="padding:0.75rem 1rem;background:#fff;border-radius:8px;text-align:center;border:2px solid #e2e8f0;min-width:100px;">
-                            <div style="font-size:1.5rem;">🌐</div>
-                            <div style="font-size:0.7rem;font-weight:600;">Client</div>
+                <!-- LIVE HTTP REQUEST DEMO -->
+                <div style="background:#f8fafc;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
+                    <h5 style="color:#2563eb;margin-bottom:1rem;">🔄 Live HTTP Request Demo</h5>
+                    
+                    <!-- Input Fields -->
+                    <div class="input-grid" style="margin-bottom:1rem;">
+                        <div class="field-group">
+                            <label>N (kg/ha)</label>
+                            <input type="number" id="liveN" value="90" min="0" max="200">
                         </div>
-                        <div class="flow-arrow-step">→</div>
-                        <div id="step2" class="flow-box" style="padding:0.75rem 1rem;background:#fff;border-radius:8px;text-align:center;border:2px solid #e2e8f0;min-width:100px;">
-                            <div style="font-size:1.5rem;">⚙️</div>
-                            <div style="font-size:0.7rem;font-weight:600;">Server</div>
+                        <div class="field-group">
+                            <label>P (kg/ha)</label>
+                            <input type="number" id="liveP" value="42" min="0" max="200">
                         </div>
-                        <div class="flow-arrow-step">→</div>
-                        <div id="step3" class="flow-box" style="padding:0.75rem 1rem;background:#fff;border-radius:8px;text-align:center;border:2px solid #e2e8f0;min-width:100px;">
-                            <div style="font-size:1.5rem;">💾</div>
-                            <div style="font-size:0.7rem;font-weight:600;">MySQL</div>
+                        <div class="field-group">
+                            <label>K (kg/ha)</label>
+                            <input type="number" id="liveK" value="43" min="0" max="200">
                         </div>
-                        <div class="flow-arrow-step">→</div>
-                        <div id="step4" class="flow-box" style="padding:0.75rem 1rem;background:#fff;border-radius:8px;text-align:center;border:2px solid #e2e8f0;min-width:100px;">
-                            <div style="font-size:1.5rem;">📡</div>
-                            <div style="font-size:0.7rem;font-weight:600;">Response</div>
+                        <div class="field-group">
+                            <label>pH</label>
+                            <input type="number" id="livePh" value="6.5" min="0" max="14" step="0.1">
                         </div>
                     </div>
                     
-                    <!-- Step Status -->
-                    <div id="flowStatus" style="background:#fff;border-radius:8px;padding:1rem;min-height:60px;border:1px solid #e2e8f0;">
-                        <div id="statusText" style="font-size:0.85rem;color:#64748b;text-align:center;">
-                            Click "Start Demo" to see real-time data flow
-                        </div>
-                    </div>
-                    
-                    <button id="startFlowBtn" class="btn-gradient" onclick="startFlowDemo()" style="margin-top:1rem;">
-                        ▶ Start Data Flow Demo
+                    <button class="btn-gradient" onclick="sendLiveRequest()" style="margin-bottom:1rem;">
+                        ▶ Send Live HTTP Request
                     </button>
+                    
+                    <!-- Request Details -->
+                    <div id="requestBox" style="margin-bottom:1rem;">
+                        <div style="font-weight:700;color:#2563eb;margin-bottom:0.5rem;">📤 HTTP Request:</div>
+                        <div class="query-box" id="requestDisplay" style="font-size:0.75rem;">
+                            <span style="color:#64748b;">Enter values and click "Send Live HTTP Request"</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Response Details -->
+                    <div id="responseBox">
+                        <div style="font-weight:700;color:#7c3aed;margin-bottom:0.5rem;">📥 HTTP Response:</div>
+                        <div class="query-box" id="responseDisplay" style="font-size:0.75rem;">
+                            <span style="color:#64748b;">Waiting for response...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div id="httpStatus" style="margin-top:1rem;padding:0.75rem;background:#fff;border-radius:8px;text-align:center;font-size:0.85rem;">
+                        <span style="color:#64748b;">Click button to send request</span>
+                    </div>
                 </div>
 
                 <h5 style="color:#2563eb;">OSI Model Layers</h5>
@@ -327,22 +339,69 @@ Content-Type: application/json
             <div class="section-card stats">
                 <h3>📊 Statistics Implementation</h3>
                 
-                <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-value">85%</div><div class="stat-label">Avg Confidence</div></div>
-                    <div class="stat-card"><div class="stat-value">Rice</div><div class="stat-label">Top Crop</div></div>
+                <!-- KPI Cards -->
+                <div class="stats-grid" id="statsKpiGrid">
+                    <div class="stat-card"><div class="stat-value" id="kpiAvgRain">-</div><div class="stat-label">Avg Rainfall (mm)</div></div>
+                    <div class="stat-card"><div class="stat-value" id="kpiAvgN">-</div><div class="stat-label">Avg Nitrogen (N)</div></div>
+                    <div class="stat-card"><div class="stat-value" id="kpiAvgP">-</div><div class="stat-label">Avg Phosphorus (P)</div></div>
+                    <div class="stat-card"><div class="stat-value" id="kpiAvgK">-</div><div class="stat-label">Avg Potassium (K)</div></div>
+                    <div class="stat-card"><div class="stat-value" id="kpiTotalCrops">-</div><div class="stat-label">Total Crops</div></div>
                 </div>
 
-                <h5 style="color:#7c3aed;">NPK Trend Analysis</h5>
-                <div class="chart-wrapper" style="height:200px;">
-                    <canvas id="npkChart"></canvas>
+                <!-- Crop Filter -->
+                <div class="mb-3" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+                    <label style="font-size:0.85rem;color:#64748b;font-weight:600;">Filter by Crop:</label>
+                    <select id="cropFilter" class="form-select" style="max-width:200px;font-size:0.85rem;" onchange="filterStats()">
+                        <option value="all">All Crops</option>
+                    </select>
+                    <button class="btn-gradient" style="padding:0.4rem 0.8rem;font-size:0.8rem;" onclick="loadStatsData()">🔄 Refresh</button>
+                    <button class="btn-gradient" style="padding:0.4rem 0.8rem;font-size:0.8rem;background:linear-gradient(135deg,#7c3aed,#5b21b6);" onclick="exportCSV()">📥 Export CSV</button>
                 </div>
 
-                <h5 style="color:#7c3aed;">Methods Used</h5>
-                <ul style="font-size:0.85rem;color:#64748b;">
-                    <li>Descriptive Statistics (Mean, Count)</li>
-                    <li>Trend Analysis (Line charts)</li>
-                    <li>Aggregation (GROUP BY)</li>
-                </ul>
+                <!-- Charts Grid -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:1rem;margin-bottom:1rem;">
+                    <div>
+                        <h6 style="color:#7c3aed;margin-bottom:0.5rem;">🌧️ Rainfall per Crop</h6>
+                        <div class="chart-wrapper" style="height:220px;">
+                            <canvas id="rainfallChart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h6 style="color:#7c3aed;margin-bottom:0.5rem;">🧪 NPK Comparison</h6>
+                        <div class="chart-wrapper" style="height:220px;">
+                            <canvas id="npkCompareChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:1rem;">
+                    <div>
+                        <h6 style="color:#7c3aed;margin-bottom:0.5rem;">📈 pH Distribution</h6>
+                        <div class="chart-wrapper" style="height:220px;">
+                            <canvas id="phHistogramChart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h6 style="color:#7c3aed;margin-bottom:0.5rem;">🏆 Top Recommended Crops</h6>
+                        <div class="chart-wrapper" style="height:220px;">
+                            <canvas id="topCropsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Methods -->
+                <h5 style="color:#7c3aed;margin-top:1.5rem;">📐 Statistical Methods Used</h5>
+                <div class="query-box" style="font-size:0.75rem;">
+<span style="color:#22c55e;">// Descriptive Statistics</span>
+Mean = Σxᵢ / n  (Average of nutrient values)
+Count = Total number of crop records
+
+<span style="color:#22c55e;">// Aggregation</span>
+SELECT crop_name, AVG(rain_avg), AVG(n_avg), AVG(p_avg)
+FROM crops GROUP BY crop_name;
+
+<span style="color:#22c55e;">// Data Flow</span>
+MySQL → Spring Boot JPA → REST API → Chart.js → Dashboard
+                </div>
             </div>
         </div>
 
@@ -508,7 +567,238 @@ ORDER BY r.confidence_score DESC;`,
             });
         }
 
+        // ====== LIVE HTTP REQUEST DEMO ======
+        function sendLiveRequest() {
+            const n = document.getElementById('liveN').value;
+            const p = document.getElementById('liveP').value;
+            const k = document.getElementById('liveK').value;
+            const ph = document.getElementById('livePh').value;
+            
+            // Show request details
+            const requestBody = {
+                soilData: {
+                    nitrogen: parseFloat(n),
+                    phosphorus: parseFloat(p),
+                    potassium: parseFloat(k),
+                    ph: parseFloat(ph),
+                    moisture: 50
+                }
+            };
+            
+            const requestText = `<span style="color:#22c55e;">POST</span> /api/recommendation HTTP/1.1
+<span style="color:#f59e0b;">Host:</span> localhost:8080
+<span style="color:#f59e0b;">Content-Type:</span> application/json
+<span style="color:#f59e0b;">Authorization:</span> Bearer &lt;jwt_token&gt;
+
+${JSON.stringify(requestBody, null, 2)}`;
+            
+            document.getElementById('requestDisplay').innerHTML = requestText;
+            document.getElementById('responseDisplay').innerHTML = '<span style="color:#64748b;">⏳ Sending request...</span>';
+            document.getElementById('httpStatus').innerHTML = '<span style="color:#f59e0b;">🔄 Processing...</span>';
+            
+            const startTime = Date.now();
+            
+            fetch('/api/recommendation', {
+                method: 'POST',
+                credentials:'include',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify(requestBody)
+            })
+            .then(response => {
+                const latency = Date.now() - startTime;
+                return response.json().then(data => ({response, data, latency}));
+            })
+            .then(result => {
+                const {response, data, latency} = result;
+                const status = response.ok ? '200 OK' : response.status + ' Error';
+                const statusColor = response.ok ? '#16a34a' : '#dc2626';
+                
+                // Show response
+                const responseText = `<span style="color:#22c55e;">${response.status}</span> ${status}
+<span style="color:#f59e0b;">Content-Type:</span> application/json
+<span style="color:#f59e0b;">Latency:</span> ${latency}ms
+
+${JSON.stringify(data, null, 2)}`;
+                
+                document.getElementById('responseDisplay').innerHTML = responseText;
+                document.getElementById('httpStatus').innerHTML = 
+                    `<span style="color:${statusColor};font-weight:700;">✅ ${status}</span> | Latency: ${latency}ms`;
+            })
+            .catch(err => {
+                document.getElementById('responseDisplay').innerHTML = '<span style="color:#dc2626;">Error: ' + err.message + '</span>';
+                document.getElementById('httpStatus').innerHTML = '<span style="color:#dc2626;">❌ Request Failed</span>';
+            });
+        }
+
         // NPK Trend Chart
+        // ====== STATISTICS SECTION ======
+        let statsData = [];
+        let filteredData = [];
+        let rainfallChart, npkCompareChart, phHistogramChart, topCropsChart;
+
+        function loadStatsData() {
+            fetch('/api/evaluation/crops/stats', {credentials:'include'})
+            .then(r => r.json())
+            .then(result => {
+                if (result.error) {
+                    console.error('Error:', result.error);
+                    return;
+                }
+                
+                // Fix: Ensure data is an array
+                statsData = Array.isArray(result.crops) ? result.crops : [];
+                filteredData = [...statsData];
+                
+                // Update KPIs
+                document.getElementById('kpiAvgRain').textContent = result.avgRainfall || '-';
+                document.getElementById('kpiAvgN').textContent = result.avgNitrogen || '-';
+                document.getElementById('kpiAvgP').textContent = result.avgPhosphorus || '-';
+                document.getElementById('kpiAvgK').textContent = result.avgPotassium || '-';
+                document.getElementById('kpiTotalCrops').textContent = result.count || statsData.length;
+                
+                // Populate crop filter
+                const filter = document.getElementById('cropFilter');
+                const currentValue = filter.value;
+                filter.innerHTML = '<option value="all">All Crops</option>';
+                statsData.forEach(crop => {
+                    filter.innerHTML += `<option value="${crop.name}">${crop.name}</option>`;
+                });
+                filter.value = currentValue;
+                
+                // Render charts
+                renderCharts();
+            })
+            .catch(err => {
+                console.error('Failed to load stats:', err);
+            });
+        }
+
+        function filterStats() {
+            const cropFilter = document.getElementById('cropFilter').value;
+            if (cropFilter === 'all') {
+                filteredData = [...statsData];
+            } else {
+                filteredData = statsData.filter(c => c.name === cropFilter);
+            }
+            renderCharts();
+        }
+
+        function renderCharts() {
+            if (filteredData.length === 0) return;
+
+            const labels = filteredData.map(c => c.name);
+            
+            // 1. Rainfall Bar Chart
+            const rainData = filteredData.map(c => c.rainAvg);
+            if (rainfallChart) rainfallChart.destroy();
+            rainfallChart = new Chart(document.getElementById('rainfallChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Rainfall (mm)',
+                        data: rainData,
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: '#2563eb',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: {display: false} },
+                    scales: { y: {beginAtZero: true} }
+                }
+            });
+
+            // 2. NPK Grouped Bar Chart
+            const nData = filteredData.map(c => c.nAvg);
+            const pData = filteredData.map(c => c.pAvg);
+            const kData = filteredData.map(c => c.kAvg);
+            if (npkCompareChart) npkCompareChart.destroy();
+            npkCompareChart = new Chart(document.getElementById('npkCompareChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'N', data: nData, backgroundColor: '#16a34a' },
+                        { label: 'P', data: pData, backgroundColor: '#dc2626' },
+                        { label: 'K', data: kData, backgroundColor: '#2563eb' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: {beginAtZero: true} }
+                }
+            });
+
+            // 3. pH Histogram
+            const phData = filteredData.map(c => c.phAvg);
+            if (phHistogramChart) phHistogramChart.destroy();
+            phHistogramChart = new Chart(document.getElementById('phHistogramChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'pH Level',
+                        data: phData,
+                        backgroundColor: 'rgba(124, 58, 237, 0.7)',
+                        borderColor: '#7c3aed',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: {display: false} },
+                    scales: { y: {beginAtZero: true, max: 14} }
+                }
+            });
+
+            // 4. Top Crops (horizontal bar)
+            const sortedCrops = [...filteredData].sort((a, b) => b.rainAvg - a.rainAvg).slice(0, 10);
+            if (topCropsChart) topCropsChart.destroy();
+            topCropsChart = new Chart(document.getElementById('topCropsChart'), {
+                type: 'bar',
+                data: {
+                    labels: sortedCrops.map(c => c.name),
+                    datasets: [{
+                        label: 'Rainfall',
+                        data: sortedCrops.map(c => c.rainAvg),
+                        backgroundColor: [
+                            '#16a34a', '#2563eb', '#dc2626', '#7c3aed', '#d97706',
+                            '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1'
+                        ]
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: {display: false} }
+                }
+            });
+        }
+
+        function exportCSV() {
+            if (filteredData.length === 0) return;
+            let csv = 'Crop,Rainfall (mm),Nitrogen,Phosphorus,Potassium,pH\n';
+            filteredData.forEach(c => {
+                csv += `${c.name},${c.rainAvg},${c.nAvg},${c.pAvg},${c.kAvg},${c.phAvg}\n`;
+            });
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'crop_statistics.csv';
+            a.click();
+        }
+
+        // Load stats on page load
+        document.addEventListener('DOMContentLoaded', loadStatsData);
+
+        // Old NPK Chart (kept for compatibility)
         new Chart(document.getElementById('npkChart'), {
             type: 'line',
             data: {

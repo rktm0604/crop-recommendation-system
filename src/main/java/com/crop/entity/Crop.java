@@ -72,6 +72,21 @@ public class Crop {
     @Column(nullable = false)
     private Double idealRainfallMax;
 
+    @Column(name = "rain_avg")
+    private Double rainAvg;
+
+    @Column(name = "n_avg")
+    private Double nAvg;
+
+    @Column(name = "p_avg")
+    private Double pAvg;
+
+    @Column(name = "k_avg")
+    private Double kAvg;
+
+    @Column(name = "ph_avg")
+    private Double phAvg;
+
     @JsonIgnore
     @OneToMany(mappedBy = "crop", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

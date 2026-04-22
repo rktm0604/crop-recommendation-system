@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -96,5 +98,53 @@ public class EvaluationApiController {
         stats.put("averageConfidence", 85.5);
         
         return ResponseEntity.ok(stats);
+    }
+
+    /**
+     * GET /api/crops/stats
+     * Returns crop statistics for dashboard charts
+     */
+    @GetMapping("/crops/stats")
+    public ResponseEntity<Map<String, Object>> getCropStats() {
+        Map<String, Object> result = new HashMap<>();
+        
+        var cropData = cropRepository.getAllCropStats();
+        
+        if (cropData == null || cropData.isEmpty()) {
+            result.put("error", "No crop data found");
+            return ResponseEntity.ok(result);
+        }
+        
+        // Ensure it's a proper array
+        java.util.List<Map<String, Object>> cropsList = new java.util.ArrayList<>();
+        double totalRain = 0, totalN = 0, totalP = 0, totalK = 0, totalPh = 0;
+        
+        for (Object[] row : cropData) {
+            Map<String, Object> crop = new HashMap<>();
+            crop.put("name", row[0] != null ? row[0].toString() : "");
+            crop.put("rainAvg", row[1] != null ? ((Number) row[1]).doubleValue() : 0.0);
+            crop.put("nAvg", row[2] != null ? ((Number) row[2]).doubleValue() : 0.0);
+            crop.put("pAvg", row[3] != null ? ((Number) row[3]).doubleValue() : 0.0);
+            crop.put("kAvg", row[4] != null ? ((Number) row[4]).doubleValue() : 0.0);
+            crop.put("phAvg", row[5] != null ? ((Number) row[5]).doubleValue() : 0.0);
+            
+            totalRain += crop.get("rainAvg") != null ? (double) crop.get("rainAvg") : 0;
+            totalN += crop.get("nAvg") != null ? (double) crop.get("nAvg") : 0;
+            totalP += crop.get("pAvg") != null ? (double) crop.get("pAvg") : 0;
+            totalK += crop.get("kAvg") != null ? (double) crop.get("kAvg") : 0;
+            totalPh += crop.get("phAvg") != null ? (double) crop.get("phAvg") : 0;
+            
+            cropsList.add(crop);
+        }
+        
+        result.put("crops", cropsList);
+        result.put("count", cropsList.size());
+        result.put("avgRainfall", Math.round(totalRain / cropsList.size() * 100.0) / 100.0);
+        result.put("avgNitrogen", Math.round(totalN / cropsList.size() * 100.0) / 100.0);
+        result.put("avgPhosphorus", Math.round(totalP / cropsList.size() * 100.0) / 100.0);
+        result.put("avgPotassium", Math.round(totalK / cropsList.size() * 100.0) / 100.0);
+        result.put("avgPh", Math.round(totalPh / cropsList.size() * 100.0) / 100.0);
+        
+        return ResponseEntity.ok(result);
     }
 }
